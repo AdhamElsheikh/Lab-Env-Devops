@@ -1,0 +1,31 @@
+piVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"v1","kind":"Service","metadata":{"annotations":{},"name":"python-microservice-svc","namespace":"pwc"},"spec":{"ports":[{"nodePort":30080,"port":5000,"protocol":"TCP","targetPort":5000}],"selector":{"app":"python-microservice"},"type":"NodePort"}}
+  creationTimestamp: "2025-09-10T20:24:59Z"
+  name: python-microservice-svc
+  namespace: pwc
+  resourceVersion: "2695"
+  uid: 97a442f1-26b2-4fbb-8b8d-c0527f339b4f
+spec:
+  clusterIP: 10.96.231.221
+  clusterIPs:
+  - 10.96.231.221
+  externalTrafficPolicy: Cluster
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+  - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+  - nodePort: 30080
+    port: 5000
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: python-microservice
+  sessionAffinity: None
+  type: NodePort
+status:
+  loadBalancer: {}

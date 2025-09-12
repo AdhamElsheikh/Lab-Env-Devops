@@ -1,0 +1,15 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"storage.k8s.io/v1","kind":"StorageClass","metadata":{"annotations":{},"name":"nfs-client"},"parameters":{"archiveOnDelete":"false"},"provisioner":"k8s-sigs.io/nfs-subdir-external-provisioner"}
+  creationTimestamp: "2025-09-11T15:45:32Z"
+  name: nfs-client
+  resourceVersion: "16373"
+  uid: b9db2643-9cd6-4e52-bc23-ccecb7bf433f
+parameters:
+  archiveOnDelete: "false"
+provisioner: k8s-sigs.io/nfs-subdir-external-provisioner
+reclaimPolicy: Delete
+volumeBindingMode: Immediate
