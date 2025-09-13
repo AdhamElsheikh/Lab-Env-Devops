@@ -65,7 +65,7 @@ EOF
                 container('docker-git') {
                     sh '''
 cd Microservices
-docker build --network=host -t adhamelsheikh/myapp:latest .
+docker build --network=host -t adhamelsheikh/myapp:new .
 '''
                 }
             }
@@ -86,7 +86,7 @@ echo "********" | docker login -u "adhamelsheikh" --password-stdin
                 container('docker-git') {
                     sh '''
 cd Microservices
-docker push adhamelsheikh/myapp:latest
+docker push adhamelsheikh/myapp:new
 '''
                 }
             }
@@ -181,4 +181,5 @@ kubectl apply -f service.yaml
         }
     }
 }
+
 
