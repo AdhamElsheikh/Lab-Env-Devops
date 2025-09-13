@@ -75,7 +75,7 @@ docker build --network=host -t adhamelsheikh/myapp:latest .
             steps {
                 container('docker-git') {
                     sh '''
-echo "Elmas10@1973" | docker login -u "adhamelsheikh" --password-stdin
+echo "********" | docker login -u "adhamelsheikh" --password-stdin
 '''
                 }
             }
@@ -181,3 +181,4 @@ kubectl apply -f service.yaml
         }
     }
 }
+
