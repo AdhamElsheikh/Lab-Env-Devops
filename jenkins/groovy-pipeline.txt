@@ -1,9 +1,13 @@
 pipeline {
-    agent {
-        kubernetes {
-            label 'docker-git-agent'
-            defaultContainer 'docker-git'
-            yaml """
+    agent none
+
+    stages {
+        stage('Build and Push Docker Image') {
+            agent {
+                kubernetes {
+                    label 'docker-git-agent'
+                    defaultContainer 'docker-git'
+                    yaml """
 apiVersion: v1
 kind: Pod
 metadata:
@@ -26,22 +30,22 @@ spec:
     hostPath:
       path: /var/run/docker.sock
 """
-        }
-    }
-
-    stages {
-        stage('Clone Repo') {
-            steps {
-                container('docker-git') {
-                    sh 'git clone https://github.com/sameh-Tawfiq/Microservices'
                 }
             }
-        }
 
-        stage('Create Dockerfile') {
-            steps {
-                container('docker-git') {
-                    sh '''
+            stages {
+                stage('Clone Repo') {
+                    steps {
+                        container('docker-git') {
+                            sh 'git clone https://github.com/sameh-Tawfiq/Microservices'
+                        }
+                    }
+                }
+
+                stage('Create Dockerfile') {
+                    steps {
+                        container('docker-git') {
+                            sh '''
 cd Microservices
 cat > Dockerfile <<'EOF'
 FROM python:3.10-slim
@@ -56,43 +60,45 @@ COPY . .
 CMD ["python", "run.py"]
 EOF
 '''
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('Build Docker Image') {
-            steps {
-                container('docker-git') {
-                    sh '''
+                stage('Build Docker Image') {
+                    steps {
+                        container('docker-git') {
+                            sh '''
 cd Microservices
-docker build --network=host -t adhamelsheikh/myapp:new .
+docker build --network=host -t adhamelsheikh/myapp:latest .
 '''
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('Login to Docker Hub') {
-            steps {
-                container('docker-git') {
-                    sh '''
-echo "********" | docker login -u "adhamelsheikh" --password-stdin
+                stage('Login to Docker Hub') {
+                    steps {
+                        container('docker-git') {
+                            sh '''
+echo "Elmas10@1973" | docker login -u "adhamelsheikh" --password-stdin
 '''
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('Push Docker Image') {
-            steps {
-                container('docker-git') {
-                    sh '''
+                stage('Push Docker Image') {
+                    steps {
+                        container('docker-git') {
+                            sh '''
 cd Microservices
-docker push adhamelsheikh/myapp:new
+docker push adhamelsheikh/myapp:latest
 '''
+                        }
+                    }
                 }
             }
         }
 
-        stage('Deploy to verify-pwc-task') {
+        stage('Deploy MyApp Pod') {
             agent {
                 kubernetes {
                     label 'kubectl-agent'
@@ -102,84 +108,43 @@ apiVersion: v1
 kind: Pod
 metadata:
   labels:
-    some-label: kubectl-agent
+    type: jenkins-agent
 spec:
-  serviceAccountName: jenkins-admin   # <-- use your privileged SA
-  containers:
-  - name: kubectl
-    image: root@master1 new-permissions-jenkins]# cat pod.yaml 
-apiVersion: v1
-kind: Pod
-metadata:
-  name: kubectl-admin-pod
-  namespace: jenkins
-spec:
-  serviceAccountName: jenkins-cluster-admin
+  serviceAccountName: jenkins-admin
   containers:
   - name: kubectl
     image: bitnami/kubectl:latest
-    
-
     command:
-    - cat
+      - "/bin/sh"
+      - "-c"
+      - "sleep 99d"
     tty: true
+    securityContext:
+      runAsUser: 0
+  restartPolicy: Never
 """
                 }
             }
+
             steps {
                 container('kubectl') {
-                    sh '''
-# Create namespace if it doesn't exist
-kubectl create namespace verify-pwc-task 
-
-# Create deployment.yaml
-cat > deployment.yaml <<'EOF'
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: myapp-deployment
-  namespace: verify-pwc-task
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: myapp
-  template:
-    metadata:
-      labels:
-        app: myapp
-    spec:
-      containers:
-      - name: myapp
-        image: adhamelsheikh/myapp:latest
-        ports:
-        - containerPort: 80
-EOF
-
-kubectl apply -f deployment.yaml
-
-# Create a ClusterIP service
-cat > service.yaml <<'EOF'
+                    sh """
+kubectl apply -f - <<EOF
 apiVersion: v1
-kind: Service
+kind: Pod
 metadata:
-  name: myapp-service
-  namespace: verify-pwc-task
+  name: myapp
+  namespace: default
 spec:
-  selector:
-    app: myapp
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
+  containers:
+  - name: myapp
+    image: adhamelsheikh/myapp:latest
+    ports:
+    - containerPort: 80
 EOF
-
-kubectl apply -f service.yaml
-'''
+"""
                 }
             }
         }
     }
 }
-
-
